@@ -20,23 +20,47 @@ namespace SpaceEngineers
 {
     public sealed class Program : MyGridProgram
     {
-        string blockName = "HUDLCD"; //name of the block with the display
-        int displayNumber = 0;
+        /*  "BC Cargo 1",
+            "BC Cargo 2",
+            "BP Connector",
+            "BP O2/H2 Gen"
+            "Small Hydrogen Tank 1",
+            "Oxygen Tank" */
+
+        public class DisplayBlock
+        {
+            public DisplayBlock(string blockName, int displayNumber)
+            {
+                BlockName = blockName;
+                DisplayNumber = displayNumber;
+            }
+            public string BlockName { get; set; }
+            public int DisplayNumber { get; set; }
+        }
+
+        List<DisplayBlock> displays = new List<DisplayBlock>
+        {
+            new DisplayBlock("BC Programmable block", 0),
+            new DisplayBlock("BC Cockpit", 0)
+        };
 
         List<string> invs = new List<string>
         {
-            "Medium Cargo Container",
-            "Connector",
-            "O2/H2 Generator"
+            "BC Cargo 1",
+            "BC Cargo 2",
+            "BP Connector",
+            "BP O2/H2 Gen"
         };
 
         List<string> gas = new List<string>
         {
-            "Hydrogen Tank",
+             "Small Hydrogen Tank 1",
             "Oxygen Tank"
         };
 
         string warningFull;
+
+        List<IMyTextSurface> textSurfaces = new List<IMyTextSurface> { };
 
         public Program()
         {
@@ -60,17 +84,42 @@ namespace SpaceEngineers
         {
             Me.GetSurface(0).WriteText(""); //assuming the programming block exists and has a screen 0
             warningFull = "--ERROR LOG--\n";
+            string invText = inventoriesToText();
+            string gasText = gasToText();
+            createDisplayList(displays);
+            writeToSurfaces(textSurfaces, invText + "\n" + gasText);
+        }
+
+        private void writeToSurfaces(List<IMyTextSurface> surfaces, string screenText)
+        {
+            foreach (IMyTextSurface surface in surfaces)
+            {
+                surface.WriteText(screenText);
+            }
+        }
+
+        private List<IMyTextSurface> createDisplayList(List<DisplayBlock> newList)
+        {
+            List<IMyTextSurface> newDisplayList = new List<IMyTextSurface>();
+            foreach (DisplayBlock newBlock in newList)
+            {
+                newDisplayList.Add(getTextSurface(newBlock.BlockName, newBlock.DisplayNumber));
+            }
+            return newDisplayList;
+        }
+
+        private IMyTextSurface getTextSurface(string blockName, int displayNumber)
+        {
             IMyTextSurfaceProvider displayBlock = GridTerminalSystem.GetBlockWithName(blockName) as IMyTextSurfaceProvider;
             if (displayBlock == null)
             {
                 warningToScreen("Block not found: " + blockName);
+                return null;
             }
             else
             {
-                IMyTextSurface cpTextSurface = displayBlock.GetSurface(displayNumber);
-                string invText = inventoriesToText();
-                string gasText = gasToText();
-                cpTextSurface.WriteText(invText + "\n" + gasText);
+                //IMyTextSurface cpTextSurface = 
+                return displayBlock.GetSurface(displayNumber);
             }
         }
 
@@ -93,7 +142,7 @@ namespace SpaceEngineers
                         IMyInventory inv = thisBlock.GetInventory(0);
                         float invMax = inv.MaxVolume.RawValue;
                         float invCur = inv.CurrentVolume.RawValue;
-                        float percent = (invCur / invMax) * 100;                        
+                        float percent = (invCur / invMax) * 100;
                         outText += str + ": " + (int)percent + "%\n";
                     }
                     else
