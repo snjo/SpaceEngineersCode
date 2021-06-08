@@ -86,7 +86,8 @@ namespace SpaceEngineers
             warningFull = "--ERROR LOG--\n";
             string invText = inventoriesToText();
             string gasText = gasToText();
-            createDisplayList(displays);
+            textSurfaces = createDisplayList(displays);
+            warningToScreen("found " + textSurfaces.Count);
             writeToSurfaces(textSurfaces, invText + "\n" + gasText);
         }
 
