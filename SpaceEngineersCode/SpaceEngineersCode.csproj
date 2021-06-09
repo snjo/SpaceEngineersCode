@@ -109,6 +109,8 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Radar.cs" />
+    <Compile Include="TestImage.cs" />
     <None Include="Template.cs" />
     <Compile Include="Display Inventory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

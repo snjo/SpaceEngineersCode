@@ -10,6 +10,7 @@ using VRage.Game;
 using VRage.Collections;
 using Sandbox.ModAPI.Ingame;
 using VRage.Game.Components;
+using VRage.Game.GUI.TextPanel;
 using VRage.Game.ModAPI.Ingame;
 using Sandbox.ModAPI.Interfaces;
 using Sandbox.Game.EntityComponents;
@@ -27,6 +28,25 @@ namespace SpaceEngineers
             "Small Hydrogen Tank 1",
             "Oxygen Tank" */
 
+        List<DisplayBlock> displays = new List<DisplayBlock>
+        {
+            new DisplayBlock("Lemon Programmable block", 0),
+            new DisplayBlock("HUDLCD", 0)
+        };
+
+        List<string> invs = new List<string>
+        {
+            "Lemon Cargo",
+            "Lemon Connector",
+            "Lemon O2/H2 Gen"
+        };
+
+        List<string> gas = new List<string>
+        {
+            "Hydrogen Tank",
+            "Oxygen Tank"
+        };
+
         public class DisplayBlock
         {
             public DisplayBlock(string blockName, int displayNumber)
@@ -38,25 +58,6 @@ namespace SpaceEngineers
             public int DisplayNumber { get; set; }
         }
 
-        List<DisplayBlock> displays = new List<DisplayBlock>
-        {
-            new DisplayBlock("BC Programmable block", 0),
-            new DisplayBlock("BC Cockpit", 0)
-        };
-
-        List<string> invs = new List<string>
-        {
-            "BC Cargo 1",
-            "BC Cargo 2",
-            "BP Connector",
-            "BP O2/H2 Gen"
-        };
-
-        List<string> gas = new List<string>
-        {
-             "Small Hydrogen Tank 1",
-            "Oxygen Tank"
-        };
 
         string warningFull;
 
@@ -64,9 +65,6 @@ namespace SpaceEngineers
 
         public Program()
         {
-            // It's recommended to set RuntimeInfo.UpdateFrequency 
-            // here, which will allow your script to run itself without a 
-            // timer block.
             Runtime.UpdateFrequency = UpdateFrequency.Update100;
         }
 
@@ -89,6 +87,8 @@ namespace SpaceEngineers
             textSurfaces = createDisplayList(displays);
             warningToScreen("found " + textSurfaces.Count);
             writeToSurfaces(textSurfaces, invText + "\n" + gasText);
+            drawSprites(textSurfaces, invText + gasText);
+            getSpriteList();
         }
 
         private void writeToSurfaces(List<IMyTextSurface> surfaces, string screenText)
@@ -182,6 +182,39 @@ namespace SpaceEngineers
                 }
             }
             return outText;
+        }
+
+        public void drawSprites(List<IMyTextSurface> surfaces, string text)
+        {
+            string textureName = "MyObjectBuilder_Ore/Ice";
+            foreach (IMyTextSurface surface in surfaces)
+            {
+                Vector2 size = surface.TextureSize;
+                Vector2 halfSize = size / 2f;
+                Vector2 leftSide = new Vector2(0f, halfSize.Y);
+                MySprite squareSprite = MySprite.CreateSprite(textureName, leftSide, size / 10f);
+                MySprite textSprite = MySprite.CreateText(text, "Debug", Color.Yellow, scale: 2f, alignment: TextAlignment.LEFT);
+
+                using (var frame = surface.DrawFrame())
+                {                    
+                    //squareSprite.Color = Color.Red;
+                    frame.Add(squareSprite);
+                    textSprite.Position = new Vector2(10f, 10f);
+                    frame.Add(textSprite);
+                }
+            }
+        }
+
+        public void getSpriteList()
+        {
+            List<string> spriteList = new List<string>();
+            var surface = Me.GetSurface(0);
+            surface.GetSprites(spriteList);            
+            Me.CustomData = "";
+            for (int i = 0; i < spriteList.Count; i++)
+            {                
+                Me.CustomData += spriteList[i];
+            }
         }
     }
 }
